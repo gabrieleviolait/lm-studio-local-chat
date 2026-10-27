@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <link rel="icon" href="data:,">
+  <title>Local Chat - LM Studio</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      font-synthesis: none;
+      background: #f8f8f6;
+      color: #272923;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; height: 100vh; height: 100dvh; }
+    button, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
+      outline: 2px solid #315e50; outline-offset: 3px;
+    }
+    a { color: inherit; text-underline-offset: 3px; }
+    .app { display: grid; grid-template-columns: 254px minmax(0, 1fr); height: 100%; }
+    .side {
+      display: flex; flex-direction: column; padding: 32px 24px 20px;
+      border-right: 1px solid #e3e4de; background: #f0f1ed;
+      min-height: 0;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; }
+    .monogram { width: 30px; height: 30px; display: grid; place-items: center;
+      border: 1px solid #c5cbc4; border-radius: 6px; font: 600 12px/1 ui-monospace, "SFMono-Regular", Consolas, monospace; }
+    .brand-name { font-size: 15px; letter-spacing: -.35px; font-weight: 650; }
+    .brand-caption { color: #777b73; margin: 5px 0 0; font-size: 12px; }
+    .side-section { margin-top: 68px; }
+    .aside-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 650; color: #7c8078; }
+    #reset {
+      display: flex; align-items: center; gap: 10px; width: 100%; margin-top: 14px;
+      padding: 11px 12px; background: #fff; color: #30332e; text-align: left;
+      border: 1px solid #dde0d8; border-radius: 7px; font-size: 13px;
+    }
+    #reset:hover { background: #f8faf7; border-color: #bfc8bf; }
+    #reset .plus { font-size: 18px; line-height: .7; font-weight: 300; }
+    .model-area { margin-top: 37px; }
+    #model { width: 100%; margin-top: 11px; padding: 10px 28px 10px 10px;
+      color: #353932; background: #fff; border: 1px solid #dde0d8; border-radius: 6px; font-size: 12px; }
+    .side-bottom { margin-top: auto; padding-top: 20px; font-size: 12px; line-height: 1.6; color: #777b73; }
+    .side-bottom a { color: #50554c; }
+    .workspace { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+    .topbar { min-height: 76px; padding: 0 clamp(22px, 5.4vw, 88px); border-bottom: 1px solid #e9e9e4;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .top-title { font-size: 14px; font-weight: 600; letter-spacing: -.1px; }
+    #status { font-size: 12px; color: #777d73; display: flex; align-items: center; gap: 7px; text-align: right; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #b2b7ac; flex-shrink: 0; }
+    #status.ok .dot { background: #4d8069; }
+    #status.fail .dot { background: #b86d56; }
+    .conversation { flex: 1; overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+    #messages { width: min(100% - 44px, 760px); margin: 0 auto; padding: 35px 0 24px; display: flex; flex-direction: column; gap: 28px; }
+    .empty { margin: min(18vh, 140px) 0 0; }
+    .empty h1 { margin: 0 0 9px; font-size: clamp(24px, 3vw, 32px); font-weight: 520; letter-spacing: -1.25px; }
+    .empty p { margin: 0; color: #777c73; font-size: 14px; line-height: 1.7; }
+    .msg { max-width: 100%; display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 15px;
+      padding-bottom: 26px; border-bottom: 1px solid #ecece6; font-size: 14px; line-height: 1.75; }
+    .who { font-size: 12px; color: #858980; padding-top: 3px; }
+    .msg.user .who { color: #365b4e; }
+    .msg .content { overflow-wrap: anywhere; white-space: pre-wrap; color: #252821; }
+    .msg.info { display: block; color: #747a70; border: 0; }
+    .compose-wrap { flex-shrink: 0; padding: 18px clamp(22px, 5.4vw, 88px) 24px; background: #f8f8f6; }
+    .compose-inner { max-width: 760px; margin: auto; }
+    #composer { display: flex; align-items: flex-end; gap: 10px; border: 1px solid #d9ded5; border-radius: 9px; background: #fff; padding: 8px; }
+    #composer:focus-within { border-color: #839b8d; }
+    #prompt { min-width: 0; flex: 1; border: 0; resize: vertical; padding: 12px 10px; outline: none; min-height: 48px;
+      max-height: 180px; background: transparent; color: #272923; font-size: 14px; line-height: 1.5; }
+    #prompt::placeholder { color: #969a91; }
+    #send { flex-shrink: 0; background: #315b4c; color: white; padding: 10px 18px; border: 0; border-radius: 6px; font-size: 13px; }
+    #send:hover { background: #244538; }
+    #send:disabled { opacity: .45; cursor: wait; }
+    .hint { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 11px 2px 0;
+      font-size: 11px; color: #8a8f85; }
+    .mobile-only { display: none; }
+    @media (max-width: 740px) {
+      .app { display: flex; flex-direction: column; }
+      .side { display: contents; }
+      .side > .brand { padding: 14px 18px; min-height: 62px; border-bottom: 1px solid #e5e6df; background: #f0f1ed; }
+      .side .side-section { display: flex; margin: 0; padding: 7px 18px; min-height: 48px; border-bottom: 1px solid #e5e6df; background: #f0f1ed; }
+      .side-section > .aside-label, .side-section > #reset, .side .side-bottom { display: none; }
+      .model-area { display: flex; align-items: center; gap: 10px; width: 100%; margin: 0; }
+      .model-area .aside-label { white-space: nowrap; }
+      #model { flex: 1; min-width: 0; margin: 0; padding: 7px 8px; font-size: 11px; }
+      .topbar { min-height: 55px; padding: 0 18px; }
+      .mobile-only { display: inline-flex; padding: 8px 10px; border-radius: 5px; border: 1px solid #dadfd5; background: white; color: #363a34; font-size: 12px; }
+      #status { font-size: 11px; }
+      .conversation { flex: 1; }
+      #messages { width: calc(100% - 36px); padding-top: 22px; gap: 17px; }
+      .msg { grid-template-columns: 65px 1fr; gap: 10px; font-size: 14px; }
+      .compose-wrap { padding: 12px 16px max(17px, env(safe-area-inset-bottom)); }
+      .empty { margin-top: 15vh; }
+      .hint { line-height: 1.5; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="side" aria-label="Controlli della chat">
+      <div class="brand">
+        <span class="monogram" aria-hidden="true">LC</span>
+        <div><div class="brand-name">Local Chat</div><div class="brand-caption">per LM Studio</div></div>
+      </div>
+      <div class="side-section">
+        <div class="aside-label">Conversazioni</div>
+        <button id="reset" type="button"><span class="plus" aria-hidden="true">+</span> Nuova conversazione</button>
+        <div class="model-area">
+          <label class="aside-label" for="model">Modello</label>
+          <select id="model" aria-label="Modello AI"><option>Caricamento...</option></select>
+        </div>
+      </div>
+      <div class="side-bottom">Nessun account richiesto.<br>La cronologia resta in questo browser.<br><br>
+        Un progetto di <a href="https://www.gabrieleviola.it/" target="_blank" rel="noopener noreferrer">gabrieleviola.it</a>
+      </div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar">
+        <div class="top-title">Conversazione <button id="reset-mobile" class="mobile-only" type="button">Nuova chat</button></div>
+        <div id="status" role="status"><span class="dot" aria-hidden="true"></span><span id="status-text">Connessione al modello...</span></div>
+      </header>
+      <div id="conversation" class="conversation">
+        <div id="messages" role="log" aria-live="polite" aria-label="Messaggi della conversazione"></div>
+      </div>
+      <div class="compose-wrap">
+        <div class="compose-inner">
+          <form id="composer">
+            <textarea id="prompt" rows="2" placeholder="Scrivi un messaggio..." aria-label="Messaggio" required maxlength="20000"></textarea>
+            <button id="send" type="submit">Invia</button>
+          </form>
+          <div class="hint"><span>Invio per inviare · Maiusc + Invio per andare a capo</span><span>AI in esecuzione sul tuo PC</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    'use strict';
+    const $ = id => document.getElementById(id);
+    const storageKey = 'chatlan-v1'; // Compatibilita con le conversazioni della prima versione.
+    let history = [];
+    let busy = false;
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      if (Array.isArray(saved)) history = saved.filter(x => x && ['user', 'assistant'].includes(x.role) && typeof x.content === 'string').slice(-40);
+    } catch {}
+    const view = $('messages');
+    const conversation = $('conversation');
+    const scrollEnd = () => { conversation.scrollTop = conversation.scrollHeight; };
+    function item(role, content) {
+      const el = document.createElement('div'); el.className = 'msg ' + role;
+      if (role !== 'info') {
+        const tag = document.createElement('div'); tag.className = 'who'; tag.textContent = role === 'user' ? 'Tu' : 'Assistente'; el.appendChild(tag);
+      }
+      const node = document.createElement('div'); node.className = 'content'; node.textContent = content;
+      el.appendChild(node); view.appendChild(el); scrollEnd(); return node;
+    }
+    function render() {
+      view.replaceChildren();
+      if (!history.length) {
+        const intro = document.createElement('div'); intro.className = 'empty';
+        const heading = document.createElement('h1'); heading.textContent = 'Da dove iniziamo?';
+        const description = document.createElement('p'); description.textContent = 'Scrivi una domanda. Il modello risponde direttamente dal computer che esegue LM Studio.';
+        intro.append(heading, description); view.appendChild(intro);
+      } else history.forEach(m => item(m.role, m.content));
+      scrollEnd();
+    }
+    function save() { try { localStorage.setItem(storageKey, JSON.stringify(history.slice(-40))); } catch {} }
+    function status(text, kind) { $('status-text').textContent = text; $('status').className = kind || ''; }
+    async function models() {
+      try {
+        const response = await fetch('/api/models', { cache: 'no-store' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error?.message || data.error || 'API non disponibile');
+        const vals = Array.isArray(data.data) ? data.data.filter(m => m && typeof m.id === 'string') : [];
+        if (!vals.length) throw new Error('Nessun modello caricato');
+        const picker = $('model'); picker.replaceChildren();
+        for (const m of vals) { const option = document.createElement('option'); option.value = m.id; option.textContent = m.id; picker.appendChild(option); }
+        status('Modello disponibile', 'ok'); $('send').disabled = false;
+      } catch (error) { status('Connessione non disponibile', 'fail'); $('send').disabled = true; console.error(error); }
+    }
+    $('composer').addEventListener('submit', async event => {
+      event.preventDefault(); if (busy) return;
+      const content = $('prompt').value.trim(); if (!content) return;
+      const model = $('model').value; if (!model) return;
+      busy = true; $('send').disabled = true; $('prompt').value = '';
+      const empty = view.querySelector('.empty'); if (empty) empty.remove();
+      history.push({ role: 'user', content }); item('user', content); save();
+      const node = item('assistant', 'Risposta in corso...');
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model, messages: history.slice(-30), temperature: 0.7, max_tokens: 1024, stream: false })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(typeof data.error === 'string' ? data.error : (data.error?.message || 'Errore HTTP ' + response.status));
+        const result = data.choices?.[0]?.message?.content;
+        let answer = typeof result === 'string' ? result : (Array.isArray(result) ? result.map(x => x.text || '').join('\n') : '');
+        if (!answer) answer = 'Il modello non ha prodotto una risposta testuale.';
+        node.textContent = answer; history.push({ role: 'assistant', content: answer }); save();
+      } catch (error) {
+        node.textContent = 'Errore: ' + error.message + '\nVerifica che LM Studio e il modello siano ancora attivi.';
+      } finally { busy = false; $('send').disabled = false; $('prompt').focus(); scrollEnd(); }
+    });
+    $('prompt').addEventListener('keydown', event => {
+      if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); $('composer').requestSubmit(); }
+    });
+    function newConversation() { if (busy) return; history = []; save(); render(); $('prompt').focus(); }
+    $('reset').addEventListener('click', newConversation);
+    $('reset-mobile').addEventListener('click', newConversation);
+    render(); models();
+  </script>
+</body>
+</html>

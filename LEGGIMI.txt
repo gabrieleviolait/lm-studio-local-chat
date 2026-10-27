@@ -1,0 +1,28 @@
+LOCAL CHAT FOR LM STUDIO
+========================
+
+Creato da gabrieleviola.it - https://www.gabrieleviola.it/
+Codice con licenza MIT (vedi LICENSE).
+
+CHE COSA FA
+Chat web essenziale, utilizzabile da PC e smartphone nella stessa LAN.
+Usa il modello locale di LM Studio, senza installare altri server o framework.
+Mantiene la cronologia nel browser (non condivisa fra dispositivi).
+
+AVVIO
+1. In LM Studio carica un modello e avvia Developer > Local Server (porta 1234).
+2. Server Settings > Require Authentication: OFF.
+3. Doppio clic su AVVIA_LOCAL_CHAT.cmd (mantieni aperta la finestra).
+4. Dal PC: http://localhost:3000
+5. Dal telefono sulla stessa LAN: http://IP_DEL_PC:3000
+   L'indirizzo LAN compare nella finestra del programma.
+
+Se il telefono non si connette, verifica firewall Windows TCP 3000,
+profilo Privato, stessa sottorete ed eventuale isolamento Wi-Fi.
+
+SICUREZZA
+Non c'e login. Usare solo su rete privata fidata; mai esporre la porta
+3000 direttamente su Internet. Le richieste sono in HTTP, non cifrate.
+LM Studio puo essere mantenuto sulla sola interfaccia localhost.
+
+Per dettagli, licenza e troubleshooting consulta README.md.
